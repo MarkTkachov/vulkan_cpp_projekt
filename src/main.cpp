@@ -25,6 +25,15 @@ private:
 
   VkInstance instance;
 
+  const std::vector<const char *> validationLayers = {
+      "VK_LAYER_KHRONOS_validation"};
+
+#ifdef NDEBUG
+  const bool enableValidationLayers = false;
+#else
+  const bool enableValidationLayers = true;
+#endif
+
   void initWindow()
   {
     if (!glfwInit())
@@ -81,10 +90,10 @@ private:
       std::cout << '\t' << extension.extensionName << '\n';
     }
 
-    //check if glfw extensions are in the available extensions
+    // check if glfw extensions are in the available extensions
     for (uint32_t i = 0; i < glfwExtensionCount; i++)
     {
-      const char* glfwExtension = glfwExtensions[i];
+      const char *glfwExtension = glfwExtensions[i];
       bool found = false;
       for (const auto &extension : extensions)
       {
@@ -94,7 +103,8 @@ private:
           break;
         }
       }
-      if (!found) {
+      if (!found)
+      {
         char msg[256];
         snprintf(msg, sizeof(msg), "glfw extension %s not found", glfwExtension);
         throw std::runtime_error("glfw extension not found");
@@ -102,17 +112,59 @@ private:
     }
     std::cout << "All glfw extensions found\n";
 
+    // Enable validation layers if in debug mode
+    if (enableValidationLayers && !checkValidationLayerSupport())
+    {
+      throw std::runtime_error("validation layers requested, but not available!");
+    }
+
     createInfo.enabledExtensionCount = glfwExtensionCount;
     createInfo.ppEnabledExtensionNames = glfwExtensions;
 
-    createInfo.enabledLayerCount = 0;
+    if (enableValidationLayers)
+    {
+      createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+      createInfo.ppEnabledLayerNames = validationLayers.data();
+    }
+    else
+    {
+      createInfo.enabledLayerCount = 0;
+    }
 
     // Create the Vulkan instance
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
       throw std::runtime_error("failed to create instance!");
-
-
   };
+
+  bool checkValidationLayerSupport()
+  {
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    for (const char *layerName : validationLayers)
+    {
+      bool layerFound = false;
+
+      for (const auto &layerProperties : availableLayers)
+      {
+        if (strcmp(layerName, layerProperties.layerName) == 0)
+        {
+          layerFound = true;
+          break;
+        }
+      }
+
+      if (!layerFound)
+      {
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   void mainLoop()
   {
