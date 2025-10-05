@@ -158,6 +158,17 @@ private:
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
+    if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND))
+    {
+      glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+    }
+    else
+    {
+#ifndef NDEBUG
+      std::cerr << "Wayland not supported" << std::endl;
+#endif
+    }
+
     window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
@@ -1141,9 +1152,10 @@ private:
   {
     int width = 0, height = 0;
     glfwGetFramebufferSize(window, &width, &height);
-    while (width == 0 || height == 0) {
-        glfwGetFramebufferSize(window, &width, &height);
-        glfwWaitEvents();
+    while (width == 0 || height == 0)
+    {
+      glfwGetFramebufferSize(window, &width, &height);
+      glfwWaitEvents();
     }
 
     vkDeviceWaitIdle(device);
@@ -1222,8 +1234,9 @@ private:
     {
       throw std::runtime_error("failed to present swap chain image!");
     }
-
+    static int frameCounter = 0;
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    // std::cout << "Frame " << frameCounter++ << " rendered\r" << std::flush;
   }
 
   void mainLoop()
