@@ -14,6 +14,7 @@
 #include <limits>
 #include <algorithm>
 #include <fstream>
+#include <chrono>
 
 VkResult CreateDebugUtilsMessengerEXT(
     VkInstance instance,
@@ -1236,18 +1237,23 @@ private:
     {
       throw std::runtime_error("failed to present swap chain image!");
     }
-    static int frameCounter = 0;
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-    // std::cout << "Frame " << frameCounter++ << " rendered\r" << std::flush;
   }
 
   void mainLoop()
   {
+    int frameCount = 0;
+    auto startTime = std::chrono::high_resolution_clock::now();
     while (!glfwWindowShouldClose(window))
     {
       glfwPollEvents();
       drawFrame();
+      frameCount++;
     }
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = endTime - startTime;
+    double fps = frameCount / elapsed.count();
+    std::cout << "Average FPS: " << fps << std::endl;
     vkDeviceWaitIdle(device);
   };
 
