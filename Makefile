@@ -48,12 +48,12 @@ ifeq ($(UNAME_S), Linux) #LINUX
 endif
 
 
-all: $(SRC_DIRS) $(OBJ_DIRS) inc/ $(OBJECTS) $(BIN) 
+all: $(SRC_DIRS) $(OBJ_DIRS) inc/ $(OBJECTS) $(BIN) $(SHADERS_SPV)
 
 prod : DEBUG_MODE = -DNDEBUG
 prod : all
 
-$(BIN): $(SOURCE) $(OBJECTS) $(HEAD) $(SHADERS_SPV)
+$(BIN): $(SOURCE) $(OBJECTS) $(HEAD) 
 	$(CPP) $(CUSTOM_CFLAGS) $(DEBUG_MODE) -o $(BIN) $(OBJECTS) $(LIBS) 
 
 build/%.o: src/%.$(SOURCE_EXT) $(HEAD)
