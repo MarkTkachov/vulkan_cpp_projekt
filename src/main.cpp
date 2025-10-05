@@ -683,9 +683,11 @@ private:
     {
       if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
       {
+        // full speed, draws more frames than the display can show, so the latest frame is always displayed
         return availablePresentMode;
       }
     }
+    // VSYNC
     return VK_PRESENT_MODE_FIFO_KHR;
   }
 
